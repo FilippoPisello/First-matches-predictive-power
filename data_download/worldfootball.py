@@ -1,6 +1,10 @@
 """Download matches data connecting to worldfootball.net."""
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
+from dataclasses import dataclass
+from numpy import str0
+
 import pandas as pd
 import regex as re
 import requests
@@ -57,37 +61,63 @@ def download_from_worldfootball(
     output_df = None
 
     seasons = [f"{x}-{x+1}" for x in range(starting_season, ending_season + 1)]
-    rounds = range(1, 39)
 
+    web_data = []
     for season in seasons:
-        for round_ in rounds:
-            print(f"Downloading data from season {season}, round {round_}...")
-            page = get_season_round_page(league_url_tag, season, round_)
-            table_info = get_info_table(page)
+        season_data = multithread_round_data(league_url_tag, season)
+        web_data.extend(season_data)
 
-            df = table_to_dataframe(table_info)
-            df = score_in_two_columns(df)
-            season_as_int = int(season.split("-")[0])
-            df = add_season_round_info_to_df(df, season_as_int, round_)
+    for page in web_data:
+        print("Cleaning data...")
+        table_info = get_matches_table_from_page(page.page_response)
 
-            if output_df is None:
-                output_df = df
-            else:
-                output_df = output_df.append(df)
+        df = table_to_dataframe(table_info)
+        df = score_in_two_columns(df)
+        df = add_season_round_info_to_df(df, page.season_int, page.round_)
 
+        if output_df is None:
+            output_df = df
+        else:
+            output_df = output_df.append(df)
+
+    df.sort_values(by=["Season", "Round"], ascending=[True, True], inplace=True)
     print("Data download completed!\n")
     return output_df
 
 
+@dataclass
+class MatchPageResponse:
+    season_label: str
+    round_: int
+    page_response: requests.Response
+
+    @property
+    def season_int(self):
+        return int(self.season_label.split("-")[0])
+
+
+def multithread_round_data(league_tag: str, season: Any) -> list[MatchPageResponse]:
+    output = []
+    # Execute our get_data in multiple threads each having a different page number
+    with ThreadPoolExecutor(max_workers=38) as executor:
+        [
+            executor.submit(get_season_round_page, league_tag, season, round_, output)
+            for round_ in range(1, 39)
+        ]
+    return output
+
+
 def get_season_round_page(
-    league_tag: str, season: Any, round: Any
-) -> requests.Response:
-    """Get page from the web"""
-    url = f"https://www.worldfootball.net/schedule/{league_tag}-{season}-spieltag/{round}/"
-    return requests.get(url)
+    league_tag: str, season: Any, round_: Any, req_list: list
+) -> None:
+    """Get the page for a round in a given season"""
+    url = f"https://www.worldfootball.net/schedule/{league_tag}-{season}-spieltag/{round_}/"
+    response = requests.get(url)
+    req_list.append(MatchPageResponse(season, round_, response))
+    print(f"Requesting data from season {season}, round {round_}...")
 
 
-def get_info_table(page: requests.Response) -> list:
+def get_matches_table_from_page(page: requests.Response) -> list:
     """Retrive desired table info from target page"""
     soup = BeautifulSoup(page.content, "html.parser")
     table = soup.find("table", class_="standard_tabelle")
