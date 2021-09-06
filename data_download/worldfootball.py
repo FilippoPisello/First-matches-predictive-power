@@ -1,5 +1,4 @@
-"""Go to the web and download the data for the serie A matches since season
-2004/2005."""
+"""Download matches data connecting to worldfootball.net."""
 
 from typing import Any
 import pandas as pd
@@ -11,21 +10,65 @@ from bs4 import BeautifulSoup
 def seriea_download(
     starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
 ) -> pd.DataFrame:
+    print("\nStarting the download of Serie A matches data...")
+    df = download_from_worldfootball("ita-serie-a", starting_season, ending_season)
+    if save_to_excel:
+        save_dataframe_to_excel(df, "Serie A")
+    return df
+
+
+def premierleague_download(
+    starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
+) -> pd.DataFrame:
+    print("\nStarting the download of Premier League matches data...")
+    df = download_from_worldfootball(
+        "eng-premier-league", starting_season, ending_season
+    )
+    if save_to_excel:
+        save_dataframe_to_excel(df, "Premier League")
+    return df
+
+
+def ligue1_download(
+    starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
+) -> pd.DataFrame:
+    print("\nStarting the download of Ligue 1 matches data...")
+    df = download_from_worldfootball("fra-ligue-1", starting_season, ending_season)
+    if save_to_excel:
+        save_dataframe_to_excel(df, "Ligue 1")
+    return df
+
+
+def primieradivision_download(
+    starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
+) -> pd.DataFrame:
+    print("\nStarting the download of Primiera Division matches data...")
+    df = download_from_worldfootball(
+        "esp-primera-division", starting_season, ending_season
+    )
+    if save_to_excel:
+        save_dataframe_to_excel(df, "Primiera Division")
+    return df
+
+
+def download_from_worldfootball(
+    league_url_tag: str, starting_season: int, ending_season: int
+) -> pd.DataFrame:
     output_df = None
 
     seasons = [f"{x}-{x+1}" for x in range(starting_season, ending_season + 1)]
     rounds = range(1, 39)
 
     for season in seasons:
-        for round in rounds:
-            print(f"Downloading data from season {season}, round {round}...")
-            page = get_season_round_page(season, round)
+        for round_ in rounds:
+            print(f"Downloading data from season {season}, round {round_}...")
+            page = get_season_round_page(league_url_tag, season, round_)
             table_info = get_info_table(page)
 
             df = table_to_dataframe(table_info)
             df = score_in_two_columns(df)
             season_as_int = int(season.split("-")[0])
-            df = add_season_round_info_to_df(df, season_as_int, round)
+            df = add_season_round_info_to_df(df, season_as_int, round_)
 
             if output_df is None:
                 output_df = df
@@ -33,18 +76,14 @@ def seriea_download(
                 output_df = output_df.append(df)
 
     print("Data download completed!\n")
-
-    if save_to_excel:
-        output_df.to_excel("Matches Data_Serie A.xlsx", index=False)
-
     return output_df
 
 
-def get_season_round_page(season: Any, round: Any) -> requests.Response:
+def get_season_round_page(
+    league_tag: str, season: Any, round: Any
+) -> requests.Response:
     """Get page from the web"""
-    url = (
-        f"https://www.worldfootball.net/schedule/ita-serie-a-{season}-spieltag/{round}/"
-    )
+    url = f"https://www.worldfootball.net/schedule/{league_tag}-{season}-spieltag/{round}/"
     return requests.get(url)
 
 
@@ -96,3 +135,8 @@ def score_in_two_columns(df: pd.DataFrame) -> pd.DataFrame:
     df["Score Team 1"] = df["Score"].apply(lambda x: int(x.split(":")[0]))
     df["Score Team 2"] = df["Score"].apply(lambda x: int(x.split(":")[1]))
     return df
+
+
+def save_dataframe_to_excel(df: pd.DataFrame, league_tag: str) -> None:
+    df.to_excel(f"saved_dataframes/Matches Data_{league_tag}.xlsx", index=False)
+    print(f"{league_tag} matches data saved correctly")
