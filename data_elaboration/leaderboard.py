@@ -67,9 +67,7 @@ class Leaderboard:
         """Return a dict of the form {team : rank}"""
         return {
             team: score
-            for team, score in zip(
-                self.table_as_df["Team"], self.table_as_df["Points earned"]
-            )
+            for team, score in zip(self.table_as_df["Team"], self.table_as_df["Rank"])
         }
 
     def get_rank_from_team(self, team: str) -> int:
