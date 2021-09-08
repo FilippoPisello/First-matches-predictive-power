@@ -146,9 +146,10 @@ def text_is_team(input_text):
 
 def text_is_score(input_text):
     """Return true if match score in the form '3:4 (0:3) '"""
-    match1 = bool(re.match("(\d:\d \(\d:\d\) )", input_text))
+    match1 = bool(re.match("(\d+:\d+ \(\d:\d\) )", input_text))
     match2 = bool(re.match("(\d:\d dec.)", input_text))
-    return match1 or match2
+    match3 = input_text == " abor." or input_text == " dnp"
+    return match1 or match2 or match3
 
 
 def add_season_round_info_to_df(
