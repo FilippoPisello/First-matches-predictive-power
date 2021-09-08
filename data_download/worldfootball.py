@@ -3,14 +3,15 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from dataclasses import dataclass
-from numpy import str0
 
 import pandas as pd
 import regex as re
 import requests
 from bs4 import BeautifulSoup
 
-
+################################################################################
+# Download of matches data from different leagues
+################################################################################
 def seriea_download(
     starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
 ) -> pd.DataFrame:
@@ -43,18 +44,9 @@ def ligue1_download(
     return df
 
 
-def primieradivision_download(
-    starting_season: int = 2004, ending_season: int = 2020, save_to_excel: bool = True
-) -> pd.DataFrame:
-    print("\nStarting the download of Primiera Division matches data...")
-    df = download_from_worldfootball(
-        "esp-primera-division", starting_season, ending_season
-    )
-    if save_to_excel:
-        save_dataframe_to_excel(df, "Primiera Division")
-    return df
-
-
+################################################################################
+# Construction of the download process
+################################################################################
 def download_from_worldfootball(
     league_url_tag: str, starting_season: int, ending_season: int
 ) -> pd.DataFrame:
@@ -68,7 +60,6 @@ def download_from_worldfootball(
         web_data.extend(season_data)
 
     for page in web_data:
-        print("Cleaning data...")
         table_info = get_matches_table_from_page(page.page_response)
 
         df = table_to_dataframe(table_info)
@@ -80,11 +71,14 @@ def download_from_worldfootball(
         else:
             output_df = output_df.append(df)
 
-    df.sort_values(by=["Season", "Round"], ascending=[True, True], inplace=True)
+    output_df.sort_values(by=["Season", "Round"], ascending=[True, True], inplace=True)
     print("Data download completed!\n")
     return output_df
 
 
+# ---------------------------------
+# Connect to the web and request data
+# ---------------------------------
 @dataclass
 class MatchPageResponse:
     season_label: str
@@ -117,6 +111,9 @@ def get_season_round_page(
     print(f"Requesting data from season {season}, round {round_}...")
 
 
+# ---------------------------------
+# Elaborate the data downloaded from the web
+# ---------------------------------
 def get_matches_table_from_page(page: requests.Response) -> list:
     """Retrive desired table info from target page"""
     soup = BeautifulSoup(page.content, "html.parser")
@@ -128,19 +125,25 @@ def table_to_dataframe(page_table: list) -> pd.DataFrame:
     """Turn table from list to data frame"""
     elements_as_text = [i.text.replace("\n", "") for i in page_table]
 
-    teams_info = [i for i in elements_as_text if text_is_team(i)]
-    scores_info = [i for i in elements_as_text if text_is_score(i)]
+    scores_info, teams_info = [], []
+    for element in elements_as_text:
+        if text_is_score(element):
+            if element == " abor." or element == " dnp":
+                element = "0:0 fix."
+            scores_info.append(element)
+            continue
+        if text_is_team(element):
+            teams_info.append(element)
 
     team1 = teams_info[::2]
     team2 = teams_info[1::2]
+
     return pd.DataFrame({"Team 1": team1, "Team 2": team2, "Score": scores_info})
 
 
 def text_is_team(input_text):
     """Return true if text matches a team name"""
     # This excludes specifically the special case dec. of score
-    if bool(re.search("(dec.)", input_text)):
-        return False
     return bool(re.search("[a-z]", input_text))
 
 
