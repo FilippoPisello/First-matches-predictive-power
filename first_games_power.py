@@ -17,17 +17,9 @@ from data_visualization.rates_across_leagues import (
 start_season = 2004
 end_season = 2020
 
-download = False
-if download:
-    df_matches_seriea = seriea_download()
-    df_matches_premier = premierleague_download()
-    df_matches_ligue1 = ligue1_download()
-else:
-    df_matches_seriea = pd.read_excel("saved_dataframes/Matches Data_Serie A.xlsx")
-    df_matches_premier = pd.read_excel(
-        "saved_dataframes/Matches Data_Premier League.xlsx"
-    )
-    df_matches_ligue1 = pd.read_excel("saved_dataframes/Matches Data_Ligue 1.xlsx")
+df_matches_seriea = seriea_download()
+df_matches_premier = premierleague_download()
+df_matches_ligue1 = ligue1_download()
 
 matches_data = {
     "Serie A": df_matches_seriea,
