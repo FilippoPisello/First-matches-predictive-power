@@ -155,6 +155,11 @@ def text_is_score(input_text):
     return match1 or match2 or match3
 
 
+# Not in use at the moment
+def too_many_null_games(scores_list: list[str], invalid_token: str) -> bool:
+    return scores_list.count(invalid_token) >= 4
+
+
 def add_season_round_info_to_df(
     dataframe: pd.DataFrame, season: Any, round: Any
 ) -> pd.DataFrame:
