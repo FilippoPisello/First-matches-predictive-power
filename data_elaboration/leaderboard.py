@@ -44,9 +44,13 @@ class Leaderboard:
     def make_leaderboard(self, df: pd.DataFrame, ranks_range: tuple) -> pd.DataFrame:
         """Create data frame with columns ["Team", "Points Earned", "Rank"]"""
         df = self.relevant_season_rounds_only(df)
+
         df = df.groupby(["Team"], as_index=False).agg({"Points earned": "sum"})
         df["Rank"] = df["Points earned"].rank(method="min", ascending=False)
+
         df = self.desired_ranks_only(df, ranks_range)
+
+        df = df.sort_values(by=["Rank"], ascending=True)
         return df
 
     def relevant_season_rounds_only(self, df: pd.DataFrame) -> pd.DataFrame:
