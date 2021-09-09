@@ -5,6 +5,8 @@ It happened to many football fans. With a lot of games still to be played, looki
 
 In this project, I used match results from season 2004/2005 to season 2020/2021 for Serie A, Premier League and Ligue 1 in the attempt of answering the above question.
 
+If you are interested about my findings, [read the article here](analysis_article.md).
+
 # Usage
 ## How to run the code
 To run the analysis on your machine you should download the entire content of the project and run the following command within the directory where you have placed the files:
