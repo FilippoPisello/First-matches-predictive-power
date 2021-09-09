@@ -1,3 +1,4 @@
+"""Class to represent a leaderboard for a given season at a given round."""
 from typing import Union
 import pandas as pd
 

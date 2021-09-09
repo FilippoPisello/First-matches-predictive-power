@@ -1,3 +1,4 @@
+"""Contains function to plot similarity rates over the course of a season"""
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import pandas as pd
@@ -8,6 +9,8 @@ from . import tools
 def visualize_rates_per_round(
     rates_df: pd.DataFrame, league_label: str, min_season: int, max_season: int
 ) -> None:
+    """Create three series of violin plots for three tolerance levels showing
+    similarity rates across rounds."""
     _, ax = tools.initialize_plot(3)
 
     # Adding title and subtitle

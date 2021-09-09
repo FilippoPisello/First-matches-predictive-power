@@ -1,3 +1,4 @@
+"""Functions to derive similarity rates from different leaderboard objects."""
 from collections import namedtuple
 from statistics import mean
 

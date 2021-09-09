@@ -1,3 +1,4 @@
+"""Contains function to plot similarity rates over the course of the seasons."""
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 
@@ -14,6 +15,8 @@ def visualize_rates_over_time(
     rounds_list: list[int] = [1, 9, 19, 27, 37],
     tolerance: int = 1,
 ) -> None:
+    """Create a line plot for the trend of similarity rates at fixed rounds
+    across multiple seasons"""
     _, ax = tools.initialize_plot(1)
 
     # Adding title and subtitle

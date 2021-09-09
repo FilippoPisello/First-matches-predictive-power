@@ -1,13 +1,14 @@
 """Download matches data connecting to worldfootball.net."""
 
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
 from dataclasses import dataclass
+from typing import Any
 
 import pandas as pd
 import regex as re
 import requests
 from bs4 import BeautifulSoup
+
 
 ################################################################################
 # Download of matches data from different leagues

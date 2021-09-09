@@ -1,3 +1,4 @@
+"""Contains function to plot the similarity rate across different leagues"""
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import pandas as pd
@@ -12,6 +13,8 @@ def visualize_rates_per_round_across_leagues(
     tolerance: int = 1,
     rounds: list = range(1, 38),
 ):
+    """Create a line plot comparing median similarity rates at given rounds for
+    multiple leagues."""
     _, ax = tools.initialize_plot(1)
     league_labels = ", ".join(list(rates_data.keys()))
 

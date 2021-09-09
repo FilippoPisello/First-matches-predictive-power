@@ -1,5 +1,4 @@
-import pandas as pd
-
+"""Run the complete similarity rate analysis"""
 from data_download.worldfootball import (
     seriea_download,
     premierleague_download,

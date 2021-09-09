@@ -1,7 +1,9 @@
+"""Functions to convert a dataframe of matches into a dataframe of results."""
 import pandas as pd
 
 
 def results_df_from_matches(df: pd.DataFrame) -> pd.DataFrame:
+    """Intakes a dataframe of matches and outputs a dataframe of results."""
     df = add_result_column(df)
     df = add_points_per_team_columns(df)
 
